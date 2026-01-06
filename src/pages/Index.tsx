@@ -1,4 +1,3 @@
-// Version: 2.0.1 - Image bundling with cache busting
 import { useState, useEffect } from "react";
 import { Link, Element } from "react-scroll";
 import { CalendarIcon, FileTextIcon } from "@radix-ui/react-icons";
@@ -223,12 +222,12 @@ const Index = () => {
 
   const teamMembers = [
     {
-      name: "President Name",
+      name: "Aswath S",
       role: "President",
       quote:
-        "Leading with vision and determination, I guide our club towards excellence and foster innovation in computer vision.",
+        "My vision is to shape this club into a creative space where innovation meets collaboration... where every member learns, grows, and contributes to the ever-evolving world of AI and technology.",
       imageUrl: presidentImg,
-      linkedinUrl: "http://www.linkedin.com/in/president",
+      linkedinUrl: "https://www.linkedin.com/in/aswath-s-a37475336/",
     },
     {
       name: "Sasvanthu G",
