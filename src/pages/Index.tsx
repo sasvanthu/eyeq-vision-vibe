@@ -1,3 +1,4 @@
+// Version: 2.0.1 - Image bundling with cache busting
 import { useState, useEffect } from "react";
 import { Link, Element } from "react-scroll";
 import { CalendarIcon, FileTextIcon } from "@radix-ui/react-icons";
