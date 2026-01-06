@@ -12,24 +12,28 @@ router.post('/', async (req, res) => {
         idToken = req.headers.authorization.split('Bearer ')[1];
     }
 
-    console.log('Auth route called; token present:', !!idToken);
-
     if (!idToken) {
         console.error('No ID token provided to auth route');
-        return res.status(400).json({ message: 'No ID token provided' });
+        return res.status(400).json({ 
+            error: 'Bad Request',
+            message: 'No authentication token provided' 
+        });
     }
 
     try {
         if (!firebaseAdmin || !firebaseAdmin.apps.length) {
             console.error('Firebase Admin not initialized in auth route');
-            return res.status(500).json({ message: 'Auth service not configured' });
+            return res.status(500).json({ 
+                error: 'Service Unavailable',
+                message: 'Authentication service not configured' 
+            });
         }
+
         const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
-        console.log('Decoded token:', { uid: decodedToken.uid, email: decodedToken.email });
+        console.log('Token verified for user:', decodedToken.uid);
         const { uid, email, name } = decodedToken;
 
         let user = await User.findById(uid);
-        console.log('User.findById result:', !!user);
 
         if (!user) {
             const newUser = {
@@ -47,26 +51,54 @@ router.post('/', async (req, res) => {
                 },
                 joinedDate: new Date().toISOString()
             };
-            const created = await User.create(newUser);
-            console.log('User.create result:', created ? true : false);
-            user = created;
+            
+            try {
+                user = await User.create(newUser);
+                console.log('New user created:', uid);
+            } catch (createError) {
+                console.error('Error creating new user:', createError.message);
+                return res.status(500).json({ 
+                    error: 'Internal Server Error',
+                    message: 'Failed to create user profile' 
+                });
+            }
         } else {
             // Optionally update basic profile fields if missing
             const updates = {};
             if (!user.email && email) updates.email = email;
             if (!user.name && name) updates.name = name;
             if (Object.keys(updates).length) {
-                try { await User.update(uid, updates); } catch (e) { console.warn('Failed updating user basic fields', e.message); }
+                try { 
+                    await User.update(uid, updates);
+                    console.log('User profile updated:', uid);
+                } catch (updateError) { 
+                    console.warn('Failed updating user basic fields:', updateError.message);
+                    // Don't fail the request if update fails - user already exists
+                }
             }
         }
 
         res.status(200).json(user);
     } catch (error) {
-        console.error('Error verifying token or creating user:', error && error.stack ? error.stack : error);
-        const msg = error && error.message ? error.message : 'Something went wrong';
-        // If token verification failed, return 401; otherwise 500
-        if (msg.toLowerCase().includes('id token')) return res.status(401).json({ message: msg });
-        return res.status(500).json({ message: msg });
+        console.error('Error in auth route:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+
+        // Token verification errors
+        if (error.code && error.code.includes('id-token')) {
+            return res.status(401).json({ 
+                error: 'Unauthorized',
+                message: 'Token verification failed' 
+            });
+        }
+
+        // Generic error
+        return res.status(500).json({ 
+            error: 'Internal Server Error',
+            message: error.message || 'Authentication failed' 
+        });
     }
 });
 

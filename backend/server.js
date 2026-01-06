@@ -14,22 +14,55 @@ require('./config/firebase');
 
 const app = express();
 
+// CORS Configuration - Production Safe
+const allowedOrigins = [
+  'https://eyeq-simats.vercel.app',
+  'http://localhost:3000',     // Local development
+  'http://localhost:5173',     // Vite dev server
+  'http://localhost:8080',     // Vite alternative port
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like curl requests, mobile apps, etc)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
 // Middleware
-app.use(cors({ origin: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-app.use('/users', require('./routes/userRoutes'));
-app.use('/auth', require('./routes/authRoutes'));
-app.use('/projects', require('./routes/projectRoutes'));
-app.use('/contributions', require('./routes/contributionRoutes'));
-app.use('/feedback', require('./routes/feedbackRoutes'));
-app.use('/admin', require('./routes/adminRoutes'));
-app.use('/announcements', require('./routes/announcementRoutes'));
-app.use('/achievements', require('./routes/achievementRoutes'));
+// Health Check Route
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    message: 'EyeQ Backend is running 🚀',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
-// Export as Cloud Function
-exports.api = functions.https.onRequest(app);
+// API Routes - Prefixed with /api
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/projects', require('./routes/projectRoutes'));
+app.use('/api/contributions', require('./routes/contributionRoutes'));
+app.use('/api/feedback', require('./routes/feedbackRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/announcements', require('./routes/announcementRoutes'));
+app.use('/api/achievements', require('./routes/achievementRoutes'));
+
+// Only export as Cloud Function for local Firebase Emulator testing
+if (process.env.FIREBASE_EMULATOR_HOST) {
+  exports.api = functions.https.onRequest(app);
+}
 
 // Debug endpoint to check Firebase Admin and Supabase connectivity
 try {
@@ -58,13 +91,25 @@ try {
     console.warn('Failed to mount debug route', e && e.message ? e.message : e);
 }
 
-// Local Development Fallback
+// Always start HTTP server when this is the main module
+// This allows both local development and Render production deployments
 if (require.main === module) {
     const PORT = process.env.PORT || 5000;
-    const localApp = express();
-    localApp.use(cors());
-    localApp.use(express.json());
-    localApp.use('/api', app);
+    const NODE_ENV = process.env.NODE_ENV || 'development';
+    
+    // Error handling middleware
+    app.use((err, req, res, next) => {
+      console.error('Error:', err.message);
+      res.status(err.status || 500).json({
+        error: NODE_ENV === 'development' ? err.message : 'Internal Server Error',
+        status: err.status || 500
+      });
+    });
 
-    localApp.listen(PORT, () => console.log(`Server running locally on port ${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`📍 Backend Health: http://localhost:${PORT}`);
+        console.log(`📍 API Base: http://localhost:${PORT}/api`);
+        console.log(`Environment: ${NODE_ENV}`);
+    });
 }

@@ -84,6 +84,25 @@ src/
 └── assets/        # Static assets
 ```
 
+## 🚀 Deployment & Production
+
+**Status**: ✅ Production Ready
+
+For deployment to Vercel (Frontend) and Render (Backend), see:
+
+- **[COMPLETE.md](COMPLETE.md)** - Full implementation summary
+- **[PRODUCTION_DEPLOYMENT_GUIDE.md](PRODUCTION_DEPLOYMENT_GUIDE.md)** - Complete deployment guide
+- **[ENV_SETUP.md](ENV_SETUP.md)** - Environment setup instructions
+- **[PRE_DEPLOYMENT_CHECKLIST.md](PRE_DEPLOYMENT_CHECKLIST.md)** - Checklist before deployment
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick lookup guide
+
+### Quick Start for Deployment
+
+**Frontend (Vercel)**: https://eyeq-simats.vercel.app
+**Backend (Render)**: https://eyeq-backend-lodl.onrender.com
+
+Set environment variables in respective dashboards from `.env.example` and `backend/.env.example`
+
 ## Contact & Links
 
 - **WhatsApp**: Join our [WhatsApp Group](https://chat.whatsapp.com/GxFFprWNX4d8mOQJOTz7d1)

@@ -16,7 +16,10 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await login(email, password);
+            const sanitizedEmail = email.trim();
+            const sanitizedPassword = password.trim();
+
+            await login(sanitizedEmail, sanitizedPassword);
             toast({
                 title: "Login Successful",
                 description: "Welcome back!",
@@ -32,6 +35,8 @@ const Login = () => {
                 errorMessage = "Email not found. Please sign up first";
             } else if (error.code === 'auth/invalid-email') {
                 errorMessage = "Invalid email format";
+            } else if (error.code === 'auth/invalid-credential') {
+                errorMessage = "Email or password is incorrect";
             } else if (error.code === 'auth/too-many-requests') {
                 errorMessage = "Too many failed attempts. Try again later";
             } else if (error.response?.data?.message) {
