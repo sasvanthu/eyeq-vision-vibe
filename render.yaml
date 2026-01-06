@@ -9,9 +9,9 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: FIREBASE_PROJECT_ID
+      - key: eyeq-web
         sync: false
-      - key: FIREBASE_PRIVATE_KEY
+      - key: AIzaSyCp0PdBk9mEa_0kVQXQi_dVx5Aq5QqIVwY
         sync: false
       - key: FIREBASE_CLIENT_EMAIL
         sync: false
