@@ -10,11 +10,11 @@ const getApiBaseUrl = (): string => {
     }
 
     if (import.meta.env.PROD) {
-        return 'https://eyeq-backend-lodl.onrender.com/api';
+        return '/api';
     }
 
     if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-        return 'https://eyeq-backend-lodl.onrender.com/api';
+        return '/api';
     }
 
     return 'http://localhost:5000/api';
